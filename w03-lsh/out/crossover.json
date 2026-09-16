@@ -1,0 +1,54 @@
+{
+  "runs": [
+    {
+      "n": 250,
+      "brute_s": 0.18385176199990383,
+      "brute_calls": 31125,
+      "brute_peak_bytes": 7416,
+      "lsh_s": 2.74531593500069,
+      "lsh_calls": 21,
+      "lsh_peak_bytes": 3148736
+    },
+    {
+      "n": 500,
+      "brute_s": 0.8378669260000606,
+      "brute_calls": 124750,
+      "brute_peak_bytes": 8120,
+      "lsh_s": 5.523270687999684,
+      "lsh_calls": 88,
+      "lsh_peak_bytes": 6042196
+    },
+    {
+      "n": 1000,
+      "brute_s": 3.3818486010004563,
+      "brute_calls": 499500,
+      "brute_peak_bytes": 10680,
+      "lsh_s": 11.323425947999567,
+      "lsh_calls": 292,
+      "lsh_peak_bytes": 12436164
+    },
+    {
+      "n": 2000,
+      "brute_s": 13.048442469998918,
+      "brute_calls": 1999000,
+      "brute_peak_bytes": 21400,
+      "lsh_s": 22.644839148000756,
+      "lsh_calls": 1465,
+      "lsh_peak_bytes": 25171420
+    },
+    {
+      "n": 4000,
+      "brute_s": 52.88077841700033,
+      "brute_calls": 7998000,
+      "brute_peak_bytes": 22584,
+      "lsh_s": 45.39671926700066,
+      "lsh_calls": 5527,
+      "lsh_peak_bytes": 51155668
+    }
+  ],
+  "machine": {
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.3"
+  }
+}

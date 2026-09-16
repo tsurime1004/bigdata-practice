@@ -61,7 +61,37 @@ class YourFinder:
     """
 
     def __init__(self, threshold):
-        raise NotImplementedError("write your finder")
+        self.threshold = threshold
+        self.hashes = 120
+        self.bands = 30
+        self.rows = self.hashes // self.bands
+        self.prime = 4_294_967_291
+        self.coeffs = [
+            ((1_103_515_245 * (i + 1) + 12_345) % self.prime,
+             (2_654_435_761 * (i + 1) + 97_531) % self.prime)
+            for i in range(self.hashes)
+        ]
 
     def find(self, docs, similarity):
-        raise NotImplementedError
+        signatures = []
+        for doc in docs:
+            sig = []
+            for a, b in self.coeffs:
+                sig.append(min(((a * shingle + b) % self.prime) for shingle in doc))
+            signatures.append(sig)
+
+        buckets = {}
+        candidates = set()
+        for idx, sig in enumerate(signatures):
+            for band in range(self.bands):
+                start = band * self.rows
+                key = (band, tuple(sig[start:start + self.rows]))
+                for other in buckets.get(key, []):
+                    candidates.add((other, idx) if other < idx else (idx, other))
+                buckets.setdefault(key, []).append(idx)
+
+        out = set()
+        for i, j in candidates:
+            if similarity(docs[i], docs[j]) >= self.threshold:
+                out.add((i, j))
+        return out
