@@ -51,7 +51,16 @@ def minhash_signatures(columns, hashes, n_rows):
     written something correct that does not survive a dataset that does not fit
     in memory, and not fitting in memory is what this course is about.
     """
-    raise NotImplementedError("signature matrix")
+    signatures = [[float("inf")] * len(hashes) for _ in columns]
+
+    for r in range(n_rows):
+        row_hashes = [h(r) for h in hashes]
+        for c, rows in enumerate(columns):
+            if r in rows:
+                for i, value in enumerate(row_hashes):
+                    signatures[c][i] = min(signatures[c][i], value)
+
+    return signatures
 
 
 def lsh_candidates(signatures, bands):
@@ -63,7 +72,30 @@ def lsh_candidates(signatures, bands):
     The signature length must divide evenly by `bands`, or you have to decide
     what to do with the remainder. Say what you decided.
     """
-    raise NotImplementedError("LSH candidate pairs")
+    if bands <= 0:
+        raise ValueError("bands must be positive")
+    if not signatures:
+        return set()
+
+    sig_len = len(signatures[0])
+    if sig_len % bands != 0:
+        raise ValueError("signature length must divide evenly by bands")
+
+    rows_per_band = sig_len // bands
+    buckets = {}
+    candidates = set()
+
+    for col, sig in enumerate(signatures):
+        if len(sig) != sig_len:
+            raise ValueError("all signatures must have the same length")
+        for band in range(bands):
+            start = band * rows_per_band
+            band_key = (band, tuple(sig[start:start + rows_per_band]))
+            for other in buckets.get(band_key, []):
+                candidates.add((other, col) if other < col else (col, other))
+            buckets.setdefault(band_key, []).append(col)
+
+    return candidates
 
 
 # ------------------------------------------------------------------- harness
