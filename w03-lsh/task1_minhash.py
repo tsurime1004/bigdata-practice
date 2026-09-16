@@ -30,7 +30,10 @@ BOOK_HASHES = [lambda r: (r + 1) % 5, lambda r: (3 * r + 1) % 5]
 
 def jaccard(a, b):
     """|a and b| / |a or b|. Empty union is 0, not an error."""
-    raise NotImplementedError("jaccard similarity")
+    union = a | b
+    if len(union) == 0:
+        return 0
+    return len(a & b) / len(union)
 
 
 def minhash_signatures(columns, hashes, n_rows):
