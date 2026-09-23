@@ -65,13 +65,31 @@ class YourFilter:
     """
 
     def __init__(self, n_bits, seed=246):
-        raise NotImplementedError("write your filter")
+        if n_bits <= 0:
+            raise ValueError("n_bits must be positive")
+        self.n_bits = n_bits
+        self.seed = seed
+        # With ten bits per inserted item, k = (m/n) ln(2) ~= 6.93.
+        self.k = 7
+        self.bits = bytearray((n_bits + 7) // 8)
+
+    def _indices(self, item):
+        data = str(item).encode()
+        for i in range(self.k):
+            digest = hashlib.blake2b(
+                data, digest_size=8, key=f"{self.seed}:{i}".encode()
+            ).digest()
+            yield int.from_bytes(digest, "big") % self.n_bits
 
     def add(self, item):
-        raise NotImplementedError
+        for index in self._indices(item):
+            self.bits[index // 8] |= 1 << (index % 8)
 
     def __contains__(self, item):
-        raise NotImplementedError
+        return all(
+            self.bits[index // 8] & (1 << (index % 8))
+            for index in self._indices(item)
+        )
 
     def memory_bits(self):
-        raise NotImplementedError
+        return len(self.bits) * 8

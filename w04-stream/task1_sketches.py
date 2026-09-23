@@ -28,13 +28,34 @@ class BloomFilter:
     """
 
     def __init__(self, m, k, seed=246):
-        raise NotImplementedError("write the Bloom filter")
+        if m <= 0 or k <= 0:
+            raise ValueError("m and k must be positive")
+        self.m = m
+        self.k = k
+        self.seed = seed
+        self.bits = bytearray((m + 7) // 8)
 
     def add(self, item):
-        raise NotImplementedError
+        import hashlib
+
+        data = repr(item).encode("utf-8")
+        for i in range(self.k):
+            key = f"{self.seed}:{i}".encode("ascii")
+            digest = hashlib.blake2b(data, digest_size=8, key=key).digest()
+            position = int.from_bytes(digest, "big") % self.m
+            self.bits[position // 8] |= 1 << (position % 8)
 
     def __contains__(self, item):
-        raise NotImplementedError
+        import hashlib
+
+        data = repr(item).encode("utf-8")
+        for i in range(self.k):
+            key = f"{self.seed}:{i}".encode("ascii")
+            digest = hashlib.blake2b(data, digest_size=8, key=key).digest()
+            position = int.from_bytes(digest, "big") % self.m
+            if not self.bits[position // 8] & (1 << (position % 8)):
+                return False
+        return True
 
     def expected_fp_rate(self, n_inserted):
         """The textbook's predicted false-positive rate after n insertions.
@@ -42,7 +63,9 @@ class BloomFilter:
         §4.4.2 derives it. Return the number, do not measure it - the harness
         measures separately and compares the two.
         """
-        raise NotImplementedError
+        import math
+
+        return (1 - math.exp(-self.k * n_inserted / self.m)) ** self.k
 
 
 def flajolet_martin(stream, n_hashes=64, seed=246):
@@ -67,7 +90,34 @@ def flajolet_martin(stream, n_hashes=64, seed=246):
 
     Return your estimate as a float.
     """
-    raise NotImplementedError("write Flajolet-Martin")
+    import hashlib
+    import statistics
+
+    if n_hashes <= 0:
+        raise ValueError("n_hashes must be positive")
+
+    maxima = [0] * n_hashes
+    seen_any = False
+    for item in stream:
+        seen_any = True
+        data = repr(item).encode("utf-8")
+        for i in range(n_hashes):
+            key = f"{seed}:{i}".encode("ascii")
+            digest = hashlib.blake2b(data, digest_size=8, key=key).digest()
+            value = int.from_bytes(digest, "big")
+            trailing_zeros = (value & -value).bit_length() - 1 if value else 64
+            maxima[i] = max(maxima[i], trailing_zeros)
+
+    if not seen_any:
+        return 0.0
+
+    group_size = max(1, int(n_hashes ** 0.5))
+    group_means = [
+        sum(maxima[start:start + group_size])
+        / len(maxima[start:start + group_size])
+        for start in range(0, n_hashes, group_size)
+    ]
+    return float(2 ** statistics.median(group_means))
 
 
 def reservoir_sample(stream, k, seed=246):
@@ -78,7 +128,21 @@ def reservoir_sample(stream, k, seed=246):
 
     Return a list of k items (or fewer if the stream was shorter).
     """
-    raise NotImplementedError("write reservoir sampling")
+    if k < 0:
+        raise ValueError("k must be non-negative")
+
+    rng = random.Random(seed)
+    reservoir = []
+    for i, item in enumerate(stream):
+        if i < k:
+            reservoir.append(item)
+            continue
+
+        replacement = rng.randrange(i + 1)
+        if replacement < k:
+            reservoir[replacement] = item
+
+    return reservoir
 
 
 # ------------------------------------------------------------------- harness
