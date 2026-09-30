@@ -41,7 +41,38 @@ def pagerank(graph, beta=0.85, iterations=100, tol=1e-10):
     you should call it converged. Return the ranks, and set `pagerank.iterations`
     to how many you actually used, because Task 2 measures that.
     """
-    raise NotImplementedError("implement PageRank")
+    nodes = list(graph)
+    n = len(nodes)
+    if n == 0:
+        pagerank.iterations = 0
+        return {}
+
+    ranks = {node: 1.0 / n for node in nodes}
+
+    for used in range(1, iterations + 1):
+        # Teleportation gives every node the same base probability.  Rank at
+        # dead ends is also spread uniformly, as though the surfer chose a new
+        # page instead of following a link.
+        dangling_rank = sum(ranks[node] for node in nodes if not graph[node])
+        uniform_share = ((1.0 - beta) + beta * dangling_rank) / n
+        next_ranks = {node: uniform_share for node in nodes}
+
+        for source in nodes:
+            links = graph[source]
+            if not links:
+                continue
+            share = beta * ranks[source] / len(links)
+            for target in links:
+                next_ranks[target] += share
+
+        change = sum(abs(next_ranks[node] - ranks[node]) for node in nodes)
+        ranks = next_ranks
+        if change < tol:
+            pagerank.iterations = used
+            return ranks
+
+    pagerank.iterations = iterations
+    return ranks
 
 
 def pagerank_no_teleport(graph, iterations=100):
@@ -50,7 +81,26 @@ def pagerank_no_teleport(graph, iterations=100):
     It exists so you can watch both failures happen rather than take them on
     trust. The harness checks that it really does fail.
     """
-    raise NotImplementedError("implement the broken version")
+    nodes = list(graph)
+    n = len(nodes)
+    if n == 0:
+        return {}
+
+    ranks = {node: 1.0 / n for node in nodes}
+    for _ in range(iterations):
+        next_ranks = {node: 0.0 for node in nodes}
+        for source in nodes:
+            links = graph[source]
+            if not links:
+                # This is deliberately broken: rank that reaches a dead end
+                # disappears instead of being redistributed.
+                continue
+            share = ranks[source] / len(links)
+            for target in links:
+                next_ranks[target] += share
+        ranks = next_ranks
+
+    return ranks
 
 
 # ------------------------------------------------------------------- harness

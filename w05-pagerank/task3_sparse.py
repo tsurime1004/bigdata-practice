@@ -86,10 +86,53 @@ class YourPageRank:
     """
 
     def __init__(self, beta=0.85, tol=1e-10, max_iter=100):
-        raise NotImplementedError("write your PageRank")
+        self.beta = beta
+        self.tol = tol
+        self.max_iter = max_iter
+        self._n = 0
+        self.iterations = 0
 
     def run(self, graph):
-        raise NotImplementedError
+        nodes = list(graph)
+        n = len(nodes)
+        self._n = n
+        self.iterations = 0
+        if n == 0:
+            return {}
+
+        index = {node: i for i, node in enumerate(nodes)}
+        adjacency = [[index[target] for target in graph[node]] for node in nodes]
+        ranks = [1.0 / n] * n
+
+        for used in range(1, self.max_iter + 1):
+            dangling_rank = sum(
+                ranks[source]
+                for source, targets in enumerate(adjacency)
+                if not targets
+            )
+
+            # Teleportation and dangling-node redistribution give every node
+            # the same amount, so one scalar is enough for both operations.
+            base = ((1.0 - self.beta) + self.beta * dangling_rank) / n
+            next_ranks = [base] * n
+
+            for source, targets in enumerate(adjacency):
+                if not targets:
+                    continue
+                share = self.beta * ranks[source] / len(targets)
+                for target in targets:
+                    next_ranks[target] += share
+
+            delta = sum(abs(new - old)
+                        for new, old in zip(next_ranks, ranks))
+            ranks = next_ranks
+            self.iterations = used
+            if delta < self.tol:
+                break
+
+        return {node: ranks[i] for i, node in enumerate(nodes)}
 
     def memory_floats(self):
-        raise NotImplementedError
+        # The adjacency list stores integer node indices.  The only
+        # graph-sized float storage is the current and next rank vectors.
+        return 2 * self._n

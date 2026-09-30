@@ -36,7 +36,44 @@ def local_pagerank(edges, nodes, beta=0.85, iterations=10):
 
     Return {node: rank} and set local_pagerank.peak_bytes.
     """
-    raise NotImplementedError("TASK 4a - reuse your sparse PageRank")
+    if nodes < 0:
+        raise ValueError("nodes must be non-negative")
+    if nodes == 0:
+        local_pagerank.peak_bytes = 0
+        return {}
+
+    # This is the same sparse representation and update used in Task 3, with
+    # the input edge list grouped once into adjacency lists.
+    adjacency = [[] for _ in range(nodes)]
+    for source, target in edges:
+        if not (0 <= source < nodes and 0 <= target < nodes):
+            raise ValueError("edge endpoint is outside the node range")
+        adjacency[source].append(target)
+
+    ranks = [1.0 / nodes] * nodes
+    for _ in range(iterations):
+        dangling_rank = sum(
+            ranks[source]
+            for source, targets in enumerate(adjacency)
+            if not targets
+        )
+        base = ((1.0 - beta) + beta * dangling_rank) / nodes
+        next_ranks = [base] * nodes
+
+        for source, targets in enumerate(adjacency):
+            if not targets:
+                continue
+            share = beta * ranks[source] / len(targets)
+            for target in targets:
+                next_ranks[target] += share
+        ranks = next_ranks
+
+    result = dict(enumerate(ranks))
+    if tracemalloc.is_tracing():
+        local_pagerank.peak_bytes = tracemalloc.get_traced_memory()[1]
+    else:
+        local_pagerank.peak_bytes = 0
+    return result
 
 
 def spark_pagerank(edges, nodes, beta=0.85, iterations=10):

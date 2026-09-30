@@ -1,0 +1,19 @@
+Task 4 — Local and Spark PageRank
+
+Local peak-memory curve (10 iterations)
+
+nodes      edges       seconds   peak MB   top
+10,000     75,101         0.64       2.4   106
+50,000     376,379        3.57      14.1   147
+100,000    751,288        7.16      28.2   147
+500,000    3,755,565     43.39     130.6   112
+
+Local versus Spark
+
+nodes      local seconds   Spark seconds   Spark/local   local top   Spark top   Spark rank sum
+50,000              3.57           14.22          4.0x         147         147           0.9959
+500,000            43.39           20.32          0.5x         112         112           0.9957
+
+The 500,000-node local run was treated as the interactive usability boundary:
+ten iterations took more than 40 seconds. Time, rather than memory, gave out
+first on this machine. Spark completed at the same size and became faster.
