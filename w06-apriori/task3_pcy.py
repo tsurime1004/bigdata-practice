@@ -19,6 +19,7 @@ Correctness first: you must find exactly the same frequent pairs. Finding fewer
 is not an optimisation.
 """
 from collections import Counter
+from array import array
 from itertools import combinations
 
 
@@ -75,8 +76,53 @@ class YourAlgorithm:
         observation.md asks about it
     """
 
+    # A prime bucket count reduces regular collision patterns. An unsigned-int
+    # array makes the fixed pass-one cost explicit: about 3.8 MiB, rather than
+    # the much larger overhead of a Python list of Python integers.
+    BUCKET_COUNT = 1_000_003
+
     def __init__(self, support):
-        raise NotImplementedError("write your algorithm")
+        self.support = support
+        self.peak_counters = 0
+
+    @classmethod
+    def _bucket(cls, first, second):
+        """Return a stable, order-independent bucket for an integer pair."""
+        if first > second:
+            first, second = second, first
+        # The benchmark's item IDs are integers. Mixing with two odd constants
+        # distributes nearby IDs better than using a simple sum.
+        return ((first * 1_000_003) ^ (second * 97_409)) % cls.BUCKET_COUNT
 
     def run(self, baskets):
-        raise NotImplementedError
+        singleton_counts = Counter()
+        bucket_counts = array("I", [0]) * self.BUCKET_COUNT
+
+        # Pass 1: find frequent items while using otherwise spare memory to
+        # count hashed buckets for every observed pair.
+        for basket in baskets:
+            items = sorted(basket)
+            singleton_counts.update(items)
+            for first, second in combinations(items, 2):
+                bucket_counts[self._bucket(first, second)] += 1
+
+        frequent_items = {item for item, count in singleton_counts.items()
+                          if count >= self.support}
+        frequent_buckets = bytearray(
+            count >= self.support for count in bucket_counts
+        )
+        # Do not retain the full integer bucket array during pass 2.
+        del bucket_counts
+
+        # Pass 2: a pair becomes a counter only if both A-Priori's item filter
+        # and PCY's frequent-bucket filter accept it.
+        pair_counts = Counter()
+        for basket in baskets:
+            items = sorted(basket & frequent_items)
+            for first, second in combinations(items, 2):
+                if frequent_buckets[self._bucket(first, second)]:
+                    pair_counts[(first, second)] += 1
+            self.peak_counters = max(self.peak_counters, len(pair_counts))
+
+        return {frozenset(pair): count for pair, count in pair_counts.items()
+                if count >= self.support}

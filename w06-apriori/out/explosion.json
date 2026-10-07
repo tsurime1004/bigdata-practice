@@ -1,0 +1,80 @@
+{
+  "runs": [
+    {
+      "support": 400,
+      "frequent_pairs": 249,
+      "peak_counters": 10585,
+      "seconds": 0.5247219530000393,
+      "peak_bytes": 1058999
+    },
+    {
+      "support": 200,
+      "frequent_pairs": 776,
+      "peak_counters": 58626,
+      "seconds": 0.9052539249998972,
+      "peak_bytes": 6385684
+    },
+    {
+      "support": 100,
+      "frequent_pairs": 2244,
+      "peak_counters": 273701,
+      "seconds": 1.4807888860000276,
+      "peak_bytes": 26529780
+    },
+    {
+      "support": 50,
+      "frequent_pairs": 6397,
+      "peak_counters": 820259,
+      "seconds": 2.621570829999996,
+      "peak_bytes": 102427292
+    },
+    {
+      "support": 25,
+      "frequent_pairs": 17045,
+      "peak_counters": 893456,
+      "seconds": 3.0985976790000223,
+      "peak_bytes": 102418236
+    },
+    {
+      "support": 12,
+      "frequent_pairs": 43116,
+      "peak_counters": 893456,
+      "seconds": 3.1201385420000634,
+      "peak_bytes": 102718732
+    },
+    {
+      "support": 6,
+      "frequent_pairs": 101938,
+      "peak_counters": 893456,
+      "seconds": 3.13876308600004,
+      "peak_bytes": 119356444
+    },
+    {
+      "support": 3,
+      "frequent_pairs": 250054,
+      "peak_counters": 893456,
+      "seconds": 3.5308615980000013,
+      "peak_bytes": 156592388
+    }
+  ],
+  "machine": {
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "processor": "Intel(R) Core(TM) i9-14900HX",
+    "cpu_count": 32,
+    "python": "3.12.3",
+    "concurrent_processes": [
+      "codex"
+    ],
+    "ram_bytes": 16576028672,
+    "load_average": [
+      0.314453125,
+      0.15478515625,
+      0.09521484375
+    ],
+    "running_processes": 2
+  },
+  "stopped": {
+    "support": 3,
+    "reason": "support 3에서 후보 카운터와 메모리 사용량이 충분히 커져 더 낮추면 시스템 응답성이 나빠질 위험이 있어 중단"
+  }
+}

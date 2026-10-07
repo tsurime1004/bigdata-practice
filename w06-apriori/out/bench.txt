@@ -1,0 +1,15 @@
+20,000 baskets · 2,000 items · support 50
+
+baseline     pairs  6,397   peak counters  820,259   0.91s
+yours        pairs  6,397   peak counters   15,125   1.00s   missing 0, extra 0
+
+same frequent pairs: yes
+peak counter reduction: 98.2% (strong)
+
+small-bucket comparison (10,003 buckets):
+pairs 6,397   same yes   peak counters 820,259   reduction 0.0%
+
+memory crossover at support 50 (tracemalloc):
+4,000 baskets   baseline 3.01 MiB   PCY 5.07 MiB
+5,000 baskets   baseline 6.12 MiB   PCY 5.12 MiB
+crossover: approximately 4,000-5,000 baskets / 30,000-50,000 baseline candidates
